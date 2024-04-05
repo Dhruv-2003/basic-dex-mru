@@ -21,6 +21,9 @@ const init: STF<DEXState> = {
     const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
     REQUIRE(accountIdx > - 1, "INIT :: USER NOT FOUND");
 
+    const account = state.balances[accountIdx]
+    REQUIRE(account.balances.eth >= eth && account.balances.usdc >= usdc, "INIT: INSUFFICIENT BALANCE");
+
     const shares = Math.sqrt(eth * usdc) - state.pool.minLiquidity;
 
     // Lock minimum liquidity to address(0);
@@ -52,6 +55,29 @@ const init: STF<DEXState> = {
 
 const supply: STF<DEXState> = {
   handler: ({ state, msgSender, inputs }) => {
+    REQUIRE(state.pool.init, "SUPPLY: POOL NOT INIT");
+
+    const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
+    REQUIRE(accountIdx > -1, "SUPPLY: ACCOUNT NOT FOUND")
+
+    const { eth, usdc } = inputs;
+
+    const account = state.balances[accountIdx]
+    REQUIRE(account.balances.eth >= eth && account.balances.usdc >= usdc, "SUPPLY: INSUFFICIENT BALANCE");
+
+
+    const shares0 = (eth * state.pool.totalShares) / state.pool.ethReserve;
+    const shares1 = (usdc * state.pool.totalShares) / state.pool.usdcReserve;
+    const shares = Math.min(shares0, shares1);
+
+    account.balances.shares += shares;
+    account.balances.eth -= eth;
+    account.balances.usdc -= usdc;
+
+    state.pool.ethReserve += eth;
+    state.pool.usdcReserve += usdc;
+    state.pool.totalShares += shares;
+    state.pool.kLast = state.pool.ethReserve * state.pool.usdcReserve;
 
     return state;
   }
