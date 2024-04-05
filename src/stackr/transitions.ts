@@ -73,6 +73,7 @@ const supply: STF<DEXState> = {
     account.balances.shares += shares;
     account.balances.eth -= eth;
     account.balances.usdc -= usdc;
+    state.balances[accountIdx] = account;
 
     state.pool.ethReserve += eth;
     state.pool.usdcReserve += usdc;
@@ -84,7 +85,32 @@ const supply: STF<DEXState> = {
 }
 
 const withdraw: STF<DEXState> = {
-  handler: ({ state }) => {
+  handler: ({ state, msgSender, inputs }) => {
+    REQUIRE(state.pool.init, "SUPPLY: POOL NOT INIT");
+
+    const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
+    REQUIRE(accountIdx > -1, "SUPPLY: ACCOUNT NOT FOUND")
+
+    const { shares } = inputs;
+
+    const account = state.balances[accountIdx];
+    REQUIRE(account.balances.shares >= shares, "WITHDRAW: INSUFFICIENT AMOUNT");
+
+    const ethAmount = (shares * state.pool.ethReserve) / state.pool.totalShares;
+    const usdcAmount = (shares * state.pool.usdcReserve) / state.pool.totalShares;
+
+    REQUIRE(ethAmount > 0 && usdcAmount > 0, "WITHDRAW: INSUFFICIENT AMOUNT BURNED");
+
+    account.balances.shares -= shares;
+    account.balances.eth += ethAmount;
+    account.balances.usdc += usdcAmount;
+    state.balances[accountIdx] = account;
+
+    state.pool.ethReserve -= ethAmount;
+    state.pool.usdcReserve -= usdcAmount;
+    state.pool.totalShares -= shares;
+    state.pool.kLast = state.pool.ethReserve * state.pool.usdcReserve
+
     return state;
   }
 }
