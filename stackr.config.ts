@@ -41,7 +41,7 @@ const stackrConfig: StackrConfig = {
     uri: "./db.sqlite",
   },
   registryContract: REGISTRY_CONTRACT,
-  logLevel: "log",
+  logLevel: "error",
 };
 
 export { stackrConfig };

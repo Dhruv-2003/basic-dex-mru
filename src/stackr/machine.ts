@@ -24,8 +24,6 @@ type DEXStateType = {
 };
 
 
-
-
 export class DEXState extends State<DEXStateType> {
   constructor(state: DEXStateType) {
     super(state);

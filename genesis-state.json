@@ -11,15 +11,15 @@
                 "wallet": "0xc43500fA76a457D0bf71BdcbDaf89b822104B094",
                 "balances": {
                     "eth": 10000,
-                    "usdc": 100000,
+                    "usdc": 10000000,
                     "shares": 0
                 }
             },
             {
                 "wallet": "0x605bbb729df90aFD10E200adaB5f64c2f069E12C",
                 "balances": {
-                    "eth": 5000,
-                    "usdc": 80000,
+                    "eth": 10,
+                    "usdc": 0,
                     "shares": 0
                 }
             }

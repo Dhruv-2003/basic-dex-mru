@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "@stackr/sdk": "latest",
+    "@types/inquirer": "^9.0.7",
     "dotenv": "^16.4.5",
     "ethers": "^6.7.1",
     "express": "^4.18.2",
