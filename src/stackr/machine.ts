@@ -33,7 +33,7 @@ type DEXStateType = {
     kLast: number,
   }
   balances: {
-    user: string,
+    wallet: string,
     balances: {
       eth: number,
       usdc: number,
