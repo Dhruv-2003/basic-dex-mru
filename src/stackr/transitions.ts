@@ -18,14 +18,14 @@ const init: STF<DEXState> = {
 
     REQUIRE(!state.pool.init, "INIT :: POOL ALREADY INIT");
 
-    const userIdx = state.balances.findIndex(account => account.user === msgSender)
-    REQUIRE(userIdx > - 1, "INIT :: USER NOT FOUND");
+    const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
+    REQUIRE(accountIdx > - 1, "INIT :: USER NOT FOUND");
 
     const shares = Math.sqrt(eth * usdc) - state.pool.minLiquidity;
 
     // Lock minimum liquidity to address(0);
     state.balances.push({
-      user: ZeroAddress,
+      wallet: ZeroAddress,
       balances: {
         eth: 0,
         usdc: 0,
@@ -34,9 +34,9 @@ const init: STF<DEXState> = {
     })
 
     // Update balances for the user. 
-    state.balances[userIdx].balances.shares = shares;
-    state.balances[userIdx].balances.eth -= eth;
-    state.balances[userIdx].balances.usdc -= usdc;
+    state.balances[accountIdx].balances.shares = shares;
+    state.balances[accountIdx].balances.eth -= eth;
+    state.balances[accountIdx].balances.usdc -= usdc;
 
     // Update pool status.
     state.pool.init = true;
