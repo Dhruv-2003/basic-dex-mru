@@ -1,13 +1,20 @@
 import { ActionSchema, AllowedInputTypes, MicroRollup } from "@stackr/sdk";
 import { HDNodeWallet, Wallet } from "ethers";
 import { stackrConfig } from "../stackr.config.ts";
-import { UpdateCounterSchema } from "./stackr/action.ts";
+import { InitPoolSchema, SwapTokenSchema, WithdrawLiquiditySchema } from "./stackr/action.ts";
 import { machine } from "./stackr/machine.ts";
 
-const wallet = Wallet.createRandom();
+import dotenv from "dotenv";
+import { Playground } from "@stackr/sdk/plugins";
+dotenv.config();
+
+let wallet: Wallet;
+if (process.env.PRIVATE_KEY) {
+  wallet = new Wallet(process.env.PRIVATE_KEY);
+}
 
 const signMessage = async (
-  wallet: HDNodeWallet,
+  wallet: Wallet,
   schema: ActionSchema,
   payload: AllowedInputTypes
 ) => {
@@ -20,27 +27,31 @@ const signMessage = async (
 };
 
 const main = async () => {
-  const mru = await MicroRollup({
+  const rollup = await MicroRollup({
     config: stackrConfig,
-    actionSchemas: [UpdateCounterSchema],
+    actionSchemas: [InitPoolSchema, SwapTokenSchema, WithdrawLiquiditySchema],
     stateMachines: [machine],
     isSandbox: true
   });
 
-  await mru.init();
+
+
+  await rollup.init();
+  Playground.init(rollup)
 
   const inputs = {
-    timestamp: Date.now(),
+    eth: 100,
+    usdc: 1000
   };
 
-  const signature = await signMessage(wallet, UpdateCounterSchema, inputs);
-  const incrementAction = UpdateCounterSchema.actionFrom({
+  const signature = await signMessage(wallet, InitPoolSchema, inputs);
+  const initAction = InitPoolSchema.actionFrom({
     inputs,
     signature,
     msgSender: wallet.address,
   });
 
-  const ack = await mru.submitAction("increment", incrementAction);
+  const ack = await rollup.submitAction("init", initAction);
   console.log(ack);
 };
 

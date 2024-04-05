@@ -3,25 +3,7 @@ import { solidityPackedKeccak256 } from "ethers";
 
 import * as genesisState from "../../genesis-state.json";
 import { transitions } from "./transitions";
-import { SolidityType } from "@stackr/sdk";
 
-
-// type DEXStateType = {
-//   pool: {
-//     init: SolidityType.BOOL
-//     ethReserve: SolidityType.UINT,
-//     usdcReserve: SolidityType.UINT,
-//     kLast: SolidityType.UINT,
-//   }
-//   balances: {
-//     user: SolidityType.ADDRESS,
-//     balances: {
-//       eth: SolidityType.UINT,
-//       usdc: SolidityType.UINT,
-//       shares: SolidityType.UINT
-//     }
-//   }[];
-// };
 
 type DEXStateType = {
   pool: {
@@ -30,7 +12,6 @@ type DEXStateType = {
     totalShares: number,
     ethReserve: number,
     usdcReserve: number,
-    kLast: number,
   }
   balances: {
     wallet: string,

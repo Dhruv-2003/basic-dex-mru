@@ -7,8 +7,10 @@
   },
   "dependencies": {
     "@stackr/sdk": "latest",
+    "dotenv": "^16.4.5",
     "ethers": "^6.7.1",
     "express": "^4.18.2",
+    "inquirer": "^9.2.17",
     "merkletreejs": "^0.3.11",
     "sqlite3": "^5.1.7"
   },

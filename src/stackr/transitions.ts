@@ -46,7 +46,6 @@ const init: STF<DEXState> = {
     state.pool.ethReserve = eth;
     state.pool.usdcReserve = usdc;
     state.pool.totalShares = shares;
-    state.pool.kLast = state.pool.ethReserve * state.pool.usdcReserve;
 
 
     return state;
@@ -78,7 +77,6 @@ const supply: STF<DEXState> = {
     state.pool.ethReserve += eth;
     state.pool.usdcReserve += usdc;
     state.pool.totalShares += shares;
-    state.pool.kLast = state.pool.ethReserve * state.pool.usdcReserve;
 
     return state;
   }
@@ -89,7 +87,7 @@ const withdraw: STF<DEXState> = {
     REQUIRE(state.pool.init, "SUPPLY: POOL NOT INIT");
 
     const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
-    REQUIRE(accountIdx > -1, "SUPPLY: ACCOUNT NOT FOUND")
+    REQUIRE(accountIdx > -1, "SUPPLY: ACCOUNT NOT FOUND");
 
     const { shares } = inputs;
 
@@ -109,21 +107,79 @@ const withdraw: STF<DEXState> = {
     state.pool.ethReserve -= ethAmount;
     state.pool.usdcReserve -= usdcAmount;
     state.pool.totalShares -= shares;
-    state.pool.kLast = state.pool.ethReserve * state.pool.usdcReserve
 
     return state;
   }
 }
 
-const swap: STF<DEXState> = {
-  handler: ({ state }) => {
+const swapETHtoUSDC: STF<DEXState> = {
+  handler: ({ state, msgSender, inputs }) => {
+    REQUIRE(state.pool.init, "SUPPLY: POOL NOT INIT");
+
+    const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
+    REQUIRE(accountIdx > -1, "SUPPLY: ACCOUNT NOT FOUND");
+
+    const { amount } = inputs;
+    const account = state.balances[accountIdx];
+    REQUIRE(amount <= account.balances.eth, "SWAP: INSUFFICIENT ETH");
+
+    /* 
+        const numerator: number = amountIn * reserveOut;
+        const denominator: number = reserveIn + amountIn;
+        const amountOut: number = numerator / denominator;
+    */
+
+    const numerator = amount * state.pool.usdcReserve;
+    const denominator = state.pool.ethReserve + amount;
+
+    const usdcOut = numerator / denominator;
+    REQUIRE(usdcOut < state.pool.usdcReserve, "SWAP: INSUFFICIENT USDC");
+
+    account.balances.eth -= amount;
+    account.balances.usdc += usdcOut;
+    state.balances[accountIdx] = account;
+
+    state.pool.ethReserve += amount;
+    state.pool.usdcReserve -= usdcOut;
+
+
     return state;
   }
 }
+
+const swapUSDCtoETH: STF<DEXState> = {
+  handler: ({ state, msgSender, inputs }) => {
+    REQUIRE(state.pool.init, "SUPPLY: POOL NOT INIT");
+
+    const accountIdx = state.balances.findIndex(account => account.wallet === msgSender);
+    REQUIRE(accountIdx > -1, "SUPPLY: ACCOUNT NOT FOUND");
+
+    const { amount } = inputs;
+    const account = state.balances[accountIdx];
+    REQUIRE(amount <= account.balances.usdc, "SWAP: INSUFFICIENT USDC");
+
+    const numerator = amount * state.pool.ethReserve;
+    const denominator = state.pool.ethReserve + amount;
+
+    const ethOut = numerator / denominator;
+    REQUIRE(ethOut < state.pool.ethReserve, "SWAP: INSUFFICIENT ETH");
+
+    account.balances.eth += ethOut;
+    account.balances.usdc -= amount;
+    state.balances[accountIdx] = account;
+
+    state.pool.ethReserve -= ethOut;
+    state.pool.usdcReserve += amount;
+
+    return state;
+  }
+}
+
 
 export const transitions: Transitions<DEXState> = {
   init,
   supply,
   withdraw,
-  swap
+  swapETHtoUSDC,
+  swapUSDCtoETH
 };
