@@ -1,6 +1,11 @@
 import { ActionSchema, SolidityType } from "@stackr/sdk";
 
 
+export const CreateAccountSchema = new ActionSchema("create", {
+  eth: SolidityType.UINT,
+  usdc: SolidityType.UINT
+});
+
 export const InitPoolSchema = new ActionSchema("init", {
   eth: SolidityType.UINT,
   usdc: SolidityType.UINT,
