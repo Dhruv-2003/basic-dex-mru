@@ -1,7 +1,13 @@
 import { ActionSchema, AllowedInputTypes, MicroRollup } from "@stackr/sdk";
 import { HDNodeWallet, Wallet } from "ethers";
 import { stackrConfig } from "../stackr.config.ts";
-import { InitPoolSchema, SwapTokenSchema, WithdrawLiquiditySchema } from "./stackr/action.ts";
+import {
+  InitPoolSchema,
+  schemas,
+  SupplyLiquiditySchema,
+  SwapTokenSchema,
+  WithdrawLiquiditySchema,
+} from "./stackr/action.ts";
 import { machine } from "./stackr/machine.ts";
 
 import dotenv from "dotenv";
@@ -29,19 +35,22 @@ const signMessage = async (
 const main = async () => {
   const rollup = await MicroRollup({
     config: stackrConfig,
-    actionSchemas: [InitPoolSchema, SwapTokenSchema, WithdrawLiquiditySchema],
+    actionSchemas: [
+      InitPoolSchema,
+      SwapTokenSchema,
+      SupplyLiquiditySchema,
+      WithdrawLiquiditySchema,
+    ],
     stateMachines: [machine],
-    isSandbox: true
+    stfSchemaMap: schemas,
   });
 
-
-
   await rollup.init();
-  Playground.init(rollup)
+  Playground.init(rollup);
 
   const inputs = {
     eth: 100,
-    usdc: 1000
+    usdc: 1000,
   };
 
   const signature = await signMessage(wallet, InitPoolSchema, inputs);
